@@ -1,6 +1,6 @@
-# template
+# PaySavvy
 
-An Electron application with React and TypeScript
+A (work-in-progress) personal loan tracking application
 
 ## Recommended IDE Setup
 
