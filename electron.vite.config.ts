@@ -16,7 +16,7 @@ export default defineConfig({
         '@utils': resolve(__dirname, './src/renderer/utils'),
         '@assets': resolve(__dirname, './src/renderer/assets'),
         '@components': resolve(__dirname, './src/renderer/components'),
-        '@context': resolve(__dirname, './src/renderer/context')
+        '@store': resolve(__dirname, './src/renderer/store')
       }
     }
   }

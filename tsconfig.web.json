@@ -18,8 +18,8 @@
       "@components/*": [
         "./src/renderer/components/*"
       ],
-      "@context/*": [
-        "./src/renderer/context/*"
+      "@store/*": [
+        "src/renderer/store/*"
       ],
     }
   }

@@ -1,5 +1,5 @@
-declare module 'loanTypes' {
-  interface Loan {
+declare module 'storeTypes' {
+  type LoanDatum = {
     id: string
     name: string
     color: string
@@ -17,10 +17,36 @@ declare module 'loanTypes' {
       remainingCount: number
       intervalType: string
     }
-    paymentHistory: HistoricPayment[]
+    paymentHistory: Array<{
+      date: string
+      amount: number
+      principal: number
+      interest: number
+    }>
   }
 
-  type HistoricPayment = { date: string; amount: number; principal: number; interest: number }
+  interface HistoricPaymentDatum {
+    id: string
+    name: string
+    color: string
+    date: Date
+    amount: number
+    principal: number
+    interest: number
+  }
 
-  type LoanDataState = { loans: Loan[] }
+  interface UpcomingPaymentDatum {
+    id: string
+    name: string
+    color: string
+    date: Date
+    amount: number
+  }
+
+  interface LoanBasicFields {
+    id: string
+    name: string
+    color: string
+    amount: number
+  }
 }
