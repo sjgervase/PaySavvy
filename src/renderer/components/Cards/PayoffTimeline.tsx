@@ -10,7 +10,7 @@ import BrushChartStacked from '@components/Charts/BrushStackedArea'
 import { UpcomingPaymentDatum } from 'storeTypes'
 import CardActionBlock from './CardAccessories/CardActionBlock'
 
-const PayoffTimeline = ({ filteredIds, colSpan }: CardProps): JSX.Element => {
+const PayoffTimeline = ({ filteredIds }: CardProps): JSX.Element => {
   const upcomingPaymentsData = useSelector(selectUpcomingPaymentsByIds(filteredIds)).map((d) => ({
     ...d,
     amount: d.amount * 100
