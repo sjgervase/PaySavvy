@@ -12,5 +12,6 @@ export const getVisibleTextColor = (baseColor: string): string =>
 
 export const createGradient = (baseColor: string): string[] => {
   const color = createColor(baseColor)
+  // return [color.hex(), color.rotate(40).lighten(0.05).hex()]
   return [color.hex(), color.rotate(40).lighten(0.05).hex()]
 }

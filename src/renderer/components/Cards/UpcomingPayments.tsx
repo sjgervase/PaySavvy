@@ -11,7 +11,7 @@ import DueDate from '@components/Common/DueDate'
 import { CardProps } from 'cardPropTypes'
 import { SortBadge } from './CardAccessories/ActionBadges'
 
-const UpcomingPayments = ({ filteredIds }: CardProps): JSX.Element => {
+const UpcomingPayments = ({ filteredIds, width }: CardProps): JSX.Element => {
   // get upcoming payments with filtered ids
   const upcomingPaymentsData = useSelector(selectUpcomingPaymentsByIds(filteredIds)).filter((d) =>
     isBefore(d.date, addMonths(new Date(), 1))
@@ -26,7 +26,7 @@ const UpcomingPayments = ({ filteredIds }: CardProps): JSX.Element => {
   }
 
   return (
-    <Card className="w-1/4">
+    <Card className={`w-${width}`}>
       <CardHeader>
         <CardTitle>Due This Month</CardTitle>
         <CardActionBlock
@@ -36,7 +36,7 @@ const UpcomingPayments = ({ filteredIds }: CardProps): JSX.Element => {
         />
       </CardHeader>
 
-      <CardContent className="flex flex-col">
+      <CardContent>
         {upcomingPaymentsData.map((d, i) => (
           <React.Fragment key={d.id}>
             <div className="flex flex-row content-center items-center">

@@ -20,10 +20,10 @@ const DayIndicators = ({ indicators }: DayIndicatorsProps): JSX.Element => {
   if (indicators.length === 1)
     return (
       <Circle
-        fill={`#${indicators[0].color}`}
+        fill={indicators[0].color}
         className="size-1.5"
         strokeWidth={1}
-        stroke={`#${indicators[0].color}`}
+        stroke={indicators[0].color}
       />
     )
   return (
@@ -87,7 +87,7 @@ const CustomDay = ({
       <PopoverContent onEscapeKeyDown={clearSelection} className="border-amber-500 box-content p-5">
         {loanInfo.map((el) => (
           <p key={el.id} className="flex items-center cursor-pointer">
-            <Circle fill={`#${el.color}`} className="size-2 mt-[4px]" />
+            <Circle fill={el.color} className="size-2 mt-[4px]" />
             <span className="ml-1 pr-2">{el.name}:</span>
             <span className="font-normal font-mono">{numberToCurrency(el.amount, true)}</span>
           </p>
@@ -101,7 +101,7 @@ const CustomDay = ({
 const FORWARD = 'FORWARD'
 const BACKWARD = 'BACKWARD'
 
-const PaymentsCalendar = ({ filteredIds }: CardProps): JSX.Element => {
+const PaymentsCalendar = ({ filteredIds, width }: CardProps): JSX.Element => {
   // get payment data
   const upcomingPaymentsData = useSelector(selectUpcomingPaymentsByIds(filteredIds))
   const historicPaymentsData = useSelector(selectHistoricPaymentsByIds(filteredIds))
@@ -143,7 +143,7 @@ const PaymentsCalendar = ({ filteredIds }: CardProps): JSX.Element => {
   }
 
   return (
-    <Card className="w-fit" onClick={clearSelection}>
+    <Card className={`w-${width}`} onClick={clearSelection}>
       <CardHeader>
         <CardTitle>Upcoming Payments</CardTitle>
 
@@ -172,6 +172,7 @@ const PaymentsCalendar = ({ filteredIds }: CardProps): JSX.Element => {
           }}
           numberOfMonths={1}
           month={selectedMonth}
+          className="p-0 flex justify-center"
           showOutsideDays={false}
           onSelect={(date) => handleSelect(date)}
           selected={selectedDay}

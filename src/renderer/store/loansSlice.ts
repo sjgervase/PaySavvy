@@ -16,14 +16,16 @@ type LoanDataState = {
 }
 
 const createInitialState = (responseData: LoanDatum[]): LoanDataState =>
-  responseData.reduce(
-    (acc: LoanDataState, loan: LoanDatum) => ({
-      loans: [...acc.loans, loan],
-      historicPayments: [...acc.historicPayments, ...parseHistoricPayments(loan)],
-      upcomingPayments: [...acc.upcomingPayments, ...getUpcomingPayments(loan)]
-    }),
-    { loans: [], historicPayments: [], upcomingPayments: [] }
-  )
+  responseData
+    .map((loan) => ({ ...loan, color: `#${loan.color}` }))
+    .reduce(
+      (acc: LoanDataState, loan: LoanDatum) => ({
+        loans: [...acc.loans, loan],
+        historicPayments: [...acc.historicPayments, ...parseHistoricPayments(loan)],
+        upcomingPayments: [...acc.upcomingPayments, ...getUpcomingPayments(loan)]
+      }),
+      { loans: [], historicPayments: [], upcomingPayments: [] }
+    )
 
 export const loansSlice = createSlice({
   name: 'loanData',

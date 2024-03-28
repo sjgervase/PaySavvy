@@ -27,19 +27,19 @@ const getAdjustments = (size: string): (string | number)[] => {
 
 const getCents = (amount: number): string => `${(amount - Math.floor(amount)).toFixed(2).slice(1)}`
 
-const AnimatedCurrency = ({
-  amount,
-  size = 'base'
-}: {
+type AnimatedCurrencyProps = {
   amount: number
   size: (typeof SIZES)[number]
-}): JSX.Element => {
+}
+const AnimatedCurrency = ({ amount, size = 'base' }: AnimatedCurrencyProps): JSX.Element => {
   const adjustments = getAdjustments(size)
+
   return (
     <>
       <animated.tspan className={`font-mono text-${size}`}>
         {numberAnim(amount, (n) => numberToCurrency(Math.floor(n), false))}
       </animated.tspan>
+
       <animated.tspan className={`font-mono ${adjustments[0]}`} dy={adjustments[1]}>
         {numberAnim(amount, getCents)}
       </animated.tspan>

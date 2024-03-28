@@ -26,7 +26,7 @@ const enterUpdateTransition = ({
 const PieChart = ({ data }: PieChartProps): JSX.Element => {
   const getColor = scaleOrdinal({
     domain: data.map((d) => d.id),
-    range: data.map((d) => `#${d.color}`)
+    range: data.map((d) => d.color)
   })
 
   const total = data.reduce((sum, d) => sum + d.amount, 0)

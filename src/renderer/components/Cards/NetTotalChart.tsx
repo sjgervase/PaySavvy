@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@components/Common/car
 import CardActionBlock from './CardAccessories/CardActionBlock'
 import PieChart from '@components/Charts/PieChart'
 
-const NetTotalChart = ({ filteredIds }: CardProps): JSX.Element => {
+const NetTotalChart = ({ filteredIds, width }: CardProps): JSX.Element => {
   // get loan data
   const netTotalsData = useSelector(selectLoansByIds(filteredIds)).map((d) => ({
     id: d.id,
@@ -15,7 +15,7 @@ const NetTotalChart = ({ filteredIds }: CardProps): JSX.Element => {
   }))
 
   return (
-    <Card className="w-1/4">
+    <Card className={`w-${width}`}>
       <CardHeader>
         <CardTitle>Net Total</CardTitle>
         <CardActionBlock leftNode={'TODO'} centerNode={'TODO'} rightNode={'TODO'} />
