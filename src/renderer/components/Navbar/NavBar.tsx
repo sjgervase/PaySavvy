@@ -8,7 +8,7 @@ import {
 
 const items = [
   { title: 'Dashboard', route: '' },
-  // { title: 'Genres', route: '' },
+  { title: 'Add a Loan', route: '' },
   // { title: 'Artists', route: '' },
   // { title: 'Albums', route: '' },
   // { title: 'Songs', route: '' },
