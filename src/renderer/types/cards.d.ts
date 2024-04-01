@@ -1,5 +1,5 @@
 declare module 'cardPropTypes' {
-  type CardProps = { filteredIds: string[]; width: number | string }
+  type CardProps = { filteredIds: string[] }
 }
 
 declare module 'paymentsCalendarTypes' {

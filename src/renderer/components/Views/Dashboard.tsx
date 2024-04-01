@@ -3,8 +3,6 @@ import NetTotalChart from '@components/Cards/NetTotalChart'
 import PaymentsCalendar from '@components/Cards/PaymentsCalendar'
 import PayoffTimeline from '@components/Cards/PayoffTimeline'
 
-//
-
 const Dashboard = (): JSX.Element => {
   return (
     <>

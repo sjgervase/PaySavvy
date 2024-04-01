@@ -1,4 +1,6 @@
 declare module 'storeTypes' {
+  type PaymentIntervalType = 'MONTHLY'
+
   type LoanDatum = {
     id: string
     name: string
