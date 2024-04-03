@@ -30,6 +30,7 @@ const PieChart = ({ data }: PieChartProps): JSX.Element => {
   })
 
   const total = data.reduce((sum, d) => sum + d.amount, 0)
+  console.log(total)
 
   return (
     <ParentSize>
@@ -93,8 +94,13 @@ const PieChart = ({ data }: PieChartProps): JSX.Element => {
               }}
             </Pie>
 
-            <text textAnchor="middle" dominantBaseline="middle" pointerEvents="none">
-              <AnimatedCurrency amount={total} size="2xl" />
+            <text
+              textAnchor="middle"
+              dominantBaseline="middle"
+              pointerEvents="none"
+              className="text-2xl"
+            >
+              <AnimatedCurrency amount={total} isSVG={true} />
             </text>
           </Group>
         </svg>

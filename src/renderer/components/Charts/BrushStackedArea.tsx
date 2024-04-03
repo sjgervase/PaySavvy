@@ -146,8 +146,6 @@ const BaseChart = ({ data, identifiers, width, height }: StackedAreaProps): JSX.
     [brushXScale]
   )
 
-  console.log(height)
-
   return (
     <svg width={width} height={height} className="select-none">
       {/* MAIN CHART */}

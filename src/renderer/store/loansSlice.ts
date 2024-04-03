@@ -62,6 +62,11 @@ export const selectLoansByIds =
   (state: RootState): LoanDatum[] =>
     state.loanData.loans.filter((el) => !ids.includes(el.id))
 
+export const selectSingleLoan =
+  (id: string) =>
+  (state: RootState): LoanDatum[] =>
+    state.loanData.loans.find((el) => el.id === id)
+
 // get all payment history data excluding ids
 export const selectHistoricPaymentsByIds =
   (ids: string[]) =>

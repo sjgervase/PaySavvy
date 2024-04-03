@@ -28,10 +28,10 @@ const HorizontalBar = ({
   return (
     <svg width="100%" height={BAR_HEIGHT}>
       <Group top={0} left={0}>
-        <LinearGradient id={`grad-${id}`} from={grad[0]} to={grad[1]} vertical={false} />
+        <LinearGradient id={`grad-shb-${id}`} from={grad[0]} to={grad[1]} vertical={false} />
         <animated.rect
           width={scaleAnim(percentage, numberToPercent)}
-          fill={`url('#${`grad-${id}`}')`}
+          fill={`url('#${`grad-shb-${id}`}')`}
           height={BAR_HEIGHT}
           rx={BAR_RX_AND_TEXT_X}
           onClick={handleClick}
@@ -46,9 +46,8 @@ const HorizontalBar = ({
           onClick={handleClick}
           className="font-mono cursor-pointer"
         >
-          <AnimatedCurrency amount={amount} size="lg" />
-
-          <animated.tspan className="font-thin text-sm" opacity={opacityAnim(750)} dy={-2}>
+          <AnimatedCurrency amount={amount} isSVG={true} />
+          <animated.tspan className="font-thin text-sm" opacity={opacityAnim(750)}>
             {` (${percentage}%)`}
           </animated.tspan>
         </text>
