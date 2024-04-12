@@ -1,21 +1,29 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { addMonths, isBefore } from 'date-fns'
-import { selectUpcomingPaymentsByIds } from '@store/loansSlice'
+
 import { numberToCurrency } from '@utils/formatters'
 import { Card, CardContent, CardHeader, CardTitle } from '@components/Common/card'
 import CardActionBlock from './CardAccessories/CardActionBlock'
 import SingleHorizontalBar from '@components/Charts/SingleHorizontalBar'
 import { Separator } from '@components/Common/separator'
 import DueDate from '@components/Common/DueDate'
-import { CardProps } from 'cardPropTypes'
-import { SortBadge } from './CardAccessories/ActionBadges'
 
-const UpcomingPayments = ({ filteredIds, width }: CardProps): JSX.Element => {
-  // get upcoming payments with filtered ids
-  const upcomingPaymentsData = useSelector(selectUpcomingPaymentsByIds(filteredIds)).filter((d) =>
-    isBefore(d.date, addMonths(new Date(), 1))
-  )
+import { SortBadge } from './CardAccessories/ActionBadges'
+import { selectPaymentsByIds } from '@store/repaymentSlice'
+import { CardProps } from '@localTypes/cards'
+
+const UpcomingPayments = ({ filteredIds }: CardProps): JSX.Element => {
+  // get filtered store data and capture next payment
+  const upcomingPaymentsData = useSelector(selectPaymentsByIds(filteredIds))
+    .map((datum) => ({
+      id: datum.id,
+      name: datum.name,
+      color: datum.color,
+      date: datum.upcomingPayments[0].date,
+      amount: datum.upcomingPayments[0].amount
+    }))
+    .filter((datum) => isBefore(datum.date, addMonths(new Date(), 1)))
 
   // calculate total for percentage based graphing
   const total = upcomingPaymentsData.reduce((sum, p) => sum + p.amount, 0)
@@ -26,7 +34,7 @@ const UpcomingPayments = ({ filteredIds, width }: CardProps): JSX.Element => {
   }
 
   return (
-    <Card className={`w-${width}`}>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle>Due This Month</CardTitle>
         <CardActionBlock

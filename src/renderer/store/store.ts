@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
 import loansReducer from './loansSlice'
+import repaymentReducer from './repaymentSlice'
 
 const store = configureStore({
   reducer: {
-    loanData: loansReducer
+    loanData: loansReducer,
+    repaymentData: repaymentReducer
   }
 })
 

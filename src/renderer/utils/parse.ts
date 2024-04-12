@@ -1,43 +1,24 @@
 import { isAfter, isEqual } from 'date-fns'
-import { LoanDatum, HistoricPaymentDatum, UpcomingPaymentDatum } from 'storeTypes'
+
 import { getAdditionFunc, getDateFromFormat } from './dates'
-
-//
-//
-//
-//
-//
-//
-//
-
-// parse historic payments
-export const parseHistoricPayments = (loan: LoanDatum): HistoricPaymentDatum[] =>
-  loan.paymentHistory.map((p) => ({
-    id: loan.id,
-    name: loan.name,
-    color: loan.color,
-    date: getDateFromFormat(p.date),
-    amount: p.amount,
-    principal: p.principal,
-    interest: p.interest
-  }))
+import { LoanDatum, PaymentAtDate } from '@localTypes/store'
 
 // get upcoming payments by initial date and interval
-export const getUpcomingPayments = (loan: LoanDatum): UpcomingPaymentDatum[] => {
+export const getUpcomingPayments = (loan: LoanDatum): PaymentAtDate[] => {
   // get dates
   const initial = getDateFromFormat(loan.startDate)
   // get callback func by intervalType
-  const additionFunc = getAdditionFunc(loan.payment.intervalType)
+  const additionFunc = getAdditionFunc(loan.repaymentData.intervalType)
 
-  const dates = [...Array(loan.payment.totalCount).keys()]
+  // generate array of all payment dates that are in the future
+  const dates = [...Array(loan.repaymentData.totalCount).keys()]
     .map((i) => additionFunc(initial, i + 1)) // add 1 for payments after start date
     .filter((date) => isAfter(date, new Date()) || isEqual(date, new Date()))
 
   return dates.map((d) => ({
-    id: loan.id,
-    name: loan.name,
-    color: loan.color,
     date: d,
-    amount: loan.payment.amount
+    principal: 0,
+    interest: 0,
+    amount: loan.repaymentData.amount
   }))
 }

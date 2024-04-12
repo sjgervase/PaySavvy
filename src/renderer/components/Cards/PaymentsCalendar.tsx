@@ -1,50 +1,23 @@
 import { useRef, useState } from 'react'
-import { CardProps } from 'cardPropTypes'
 import { Button, useDayRender } from 'react-day-picker'
 import { Card, CardContent, CardHeader, CardTitle } from '@components/Common/card'
 import { Popover, PopoverContent, PopoverTrigger } from '@components/Common/popover'
 import { Calendar } from '@components/Common/calendar'
 import { cn } from '@utils/tw'
 import { Circle } from 'lucide-react'
-import { addMonths, formatDate, getDate, subMonths } from 'date-fns'
+import { addMonths, formatDate, getDate, isEqual, subMonths } from 'date-fns'
 import { numberToCurrency } from '@utils/formatters'
 import CardActionBlock from './CardAccessories/CardActionBlock'
 import { useSelector } from 'react-redux'
-import { selectHistoricPaymentsByIds, selectUpcomingPaymentsByIds } from '@store/loansSlice'
 import { LastMonthBadge, NextMonthBadge } from './CardAccessories/ActionBadges'
-import { LoanBasicFields } from 'storeTypes'
-import { CustomDayProps } from 'paymentsCalendarTypes'
-
-type DayIndicatorsProps = { indicators: LoanBasicFields[] }
-const DayIndicators = ({ indicators }: DayIndicatorsProps): JSX.Element => {
-  if (indicators.length === 1)
-    return (
-      <Circle
-        fill={indicators[0].color}
-        className="size-1.5"
-        strokeWidth={1}
-        stroke={indicators[0].color}
-      />
-    )
-  return (
-    <div className="flex flex-row justify-center w-full">
-      {indicators.map((el, i) => (
-        <Circle
-          key={el.id}
-          fill="red"
-          className={`size-1.5 ${i === indicators.length - 1 ? '' : 'mr-0.5'}`}
-          strokeWidth={1}
-          stroke="red"
-        />
-      ))}
-    </div>
-  )
-}
+import { selectPaymentsByIds } from '@store/repaymentSlice'
+import { CardProps, CustomDayProps } from '@localTypes/cards'
 
 const CustomDay = ({
   displayMonth,
   date,
-  indicatorData,
+  identifiers,
+  getPaymentAmountAtDate,
   clearSelection
 }: CustomDayProps): JSX.Element => {
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -66,7 +39,7 @@ const CustomDay = ({
     )
 
   // get relevant loan data from ids
-  const loanInfo = indicatorData.filter((el) => loanIdsForDay.includes(el.id))
+  const loansToday = identifiers.filter((el) => loanIdsForDay.includes(el.id))
 
   // create button
   return (
@@ -75,21 +48,37 @@ const CustomDay = ({
         <Button
           {...dayRender.buttonProps}
           ref={buttonRef}
-          className={cn([dayRender.buttonProps.className, 'flex-col'])}
+          className={cn([dayRender.buttonProps.className, 'flex-col place-content-center'])}
           onClick={() => {}} // empty onclick needed for popover?
         >
-          <span className="justify-self-center pt-1.5">{getDate(date)}</span>
-
-          <DayIndicators indicators={loanInfo} />
+          <span className="pt-1.5">{getDate(date)}</span>
+          <div className="flex flex-row justify-center gap-x-0.5">
+            {loansToday.map((loan) => (
+              <Circle
+                key={loan.id}
+                fill={loan.color}
+                className="size-1.5 mx-0"
+                strokeWidth={1}
+                stroke={loan.color}
+              />
+            ))}
+          </div>
         </Button>
       </PopoverTrigger>
 
       <PopoverContent onEscapeKeyDown={clearSelection} className="border-amber-500 box-content p-5">
-        {loanInfo.map((el) => (
-          <p key={el.id} className="flex items-center cursor-pointer">
-            <Circle fill={el.color} className="size-2 mt-[4px]" />
-            <span className="ml-1 pr-2">{el.name}:</span>
-            <span className="font-normal font-mono">{numberToCurrency(el.amount, true)}</span>
+        {loansToday.map((loan) => (
+          <p key={loan.id} className="flex items-center cursor-pointer">
+            <Circle
+              fill={loan.color}
+              strokeWidth={1}
+              stroke={loan.color}
+              className="size-2 mt-[4px]"
+            />
+            <span className="ml-1 pr-2">{loan.name}:</span>
+            <span className="font-normal font-mono">
+              {numberToCurrency(getPaymentAmountAtDate(loan.id, date), true)}
+            </span>
           </p>
         ))}
       </PopoverContent>
@@ -101,27 +90,26 @@ const CustomDay = ({
 const FORWARD = 'FORWARD'
 const BACKWARD = 'BACKWARD'
 
-const PaymentsCalendar = ({ filteredIds, width }: CardProps): JSX.Element => {
+const PaymentsCalendar = ({ filteredIds }: CardProps): JSX.Element => {
   // get payment data
-  const upcomingPaymentsData = useSelector(selectUpcomingPaymentsByIds(filteredIds))
-  const historicPaymentsData = useSelector(selectHistoricPaymentsByIds(filteredIds))
+  type Initial = {
+    identifiers: Array<{ id: string; color: string; name: string }>
+    allPayments: object
+  }
+  const initial: Initial = { identifiers: [], allPayments: [] }
 
-  const calendarData = [...upcomingPaymentsData, ...historicPaymentsData].reduce(
-    (acc, d) => ({
-      ...acc,
-      [d.id]: [...(acc[d.id] || []), d.date]
+  const repaymentData = useSelector(selectPaymentsByIds(filteredIds))
+
+  const { identifiers, allPayments } = repaymentData.reduce(
+    (acc, datum) => ({
+      identifiers: [...acc.identifiers, { id: datum.id, color: datum.color, name: datum.name }],
+      allPayments: {
+        ...acc.allPayments,
+        [datum.id]: [...datum.historicPayments, ...datum.upcomingPayments].map((p) => p.date)
+      }
     }),
-    {}
+    initial
   )
-
-  const indicatorData = Object.keys(calendarData).map((d) => {
-    const {
-      name = 'unknown',
-      color = 'FFFFFF',
-      amount = 0
-    } = upcomingPaymentsData.find((p) => p.id === d) || {}
-    return { id: d, name, color, amount }
-  })
 
   // state
   const [selectedDay, setSelectedDay] = useState()
@@ -142,8 +130,21 @@ const PaymentsCalendar = ({ filteredIds, width }: CardProps): JSX.Element => {
     })
   }
 
+  const getPaymentAmountAtDate = (loanId: string, queryDate: Date): number => {
+    const { historicPayments, upcomingPayments } = repaymentData.find((el) => el.id === loanId) ?? {
+      upcomingPayments: [{ date: queryDate, amount: 0 }],
+      historicPayments: [{ date: queryDate, amount: 0 }]
+    }
+    return (
+      [...historicPayments, ...upcomingPayments].find((p) => isEqual(p.date, queryDate))?.amount ||
+      0
+    )
+  }
+
+  console.log(allPayments)
+
   return (
-    <Card className={`w-${width}`} onClick={clearSelection}>
+    <Card className="h-full" onClick={clearSelection}>
       <CardHeader>
         <CardTitle>Upcoming Payments</CardTitle>
 
@@ -167,7 +168,13 @@ const PaymentsCalendar = ({ filteredIds, width }: CardProps): JSX.Element => {
       <CardContent>
         <Calendar
           components={{
-            Day: (props) => CustomDay({ ...props, indicatorData, clearSelection }),
+            Day: (props) =>
+              CustomDay({
+                ...props,
+                identifiers,
+                getPaymentAmountAtDate,
+                clearSelection
+              }),
             Caption: () => <></>
           }}
           numberOfMonths={1}
@@ -177,7 +184,7 @@ const PaymentsCalendar = ({ filteredIds, width }: CardProps): JSX.Element => {
           onSelect={(date) => handleSelect(date)}
           selected={selectedDay}
           mode="single"
-          modifiers={{ ...calendarData }}
+          modifiers={{ ...allPayments }}
           modifiersClassNames={{ today: 'bg-amber-300 hover:bg-amber-400' }}
         />
       </CardContent>
