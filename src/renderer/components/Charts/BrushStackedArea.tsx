@@ -112,7 +112,8 @@ const BaseChart = ({ data, identifiers, width, height }: StackedAreaProps): JSX.
       scaleLinear<number>({
         range: [yMax, 0],
         domain: [0, Math.max(...filteredData.map(getValues))],
-        nice: true
+        nice: true,
+        round: true
       }),
     [yMax, filteredData]
   )
@@ -146,7 +147,7 @@ const BaseChart = ({ data, identifiers, width, height }: StackedAreaProps): JSX.
     [brushXScale]
   )
 
-  console.log(height)
+  // console.log(height)
 
   return (
     <svg width={width} height={height} className="select-none">

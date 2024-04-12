@@ -1,9 +1,9 @@
 import Dashboard from '@components/Views/Dashboard'
-import LoanForm from '@components/Forms/LoanForm'
+// import LoanForm from '@components/Forms/LoanForm'
 
 const ViewContainer = (): JSX.Element => {
   // return <Dashboard />
-  return <LoanForm />
+  return <Dashboard />
 }
 
 export default ViewContainer

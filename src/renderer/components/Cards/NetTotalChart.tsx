@@ -1,21 +1,24 @@
 import { selectLoansByIds } from '@store/loansSlice'
-import { CardProps } from 'cardPropTypes'
+
 import { useSelector } from 'react-redux'
 import { Card, CardContent, CardHeader, CardTitle } from '@components/Common/card'
 import CardActionBlock from './CardAccessories/CardActionBlock'
 import PieChart from '@components/Charts/PieChart'
+import { CardProps } from '@localTypes/cards'
 
-const NetTotalChart = ({ filteredIds, width }: CardProps): JSX.Element => {
+const NetTotalChart = ({ filteredIds }: CardProps): JSX.Element => {
   // get loan data
   const netTotalsData = useSelector(selectLoansByIds(filteredIds)).map((d) => ({
     id: d.id,
     color: d.color,
-    amount: d.remainingAmount,
+    amount: d.remainingAmounts.remainingTotal,
     name: d.name
   }))
 
+  console.log(netTotalsData)
+
   return (
-    <Card className={`w-${width}`}>
+    <Card>
       <CardHeader>
         <CardTitle>Net Total</CardTitle>
         <CardActionBlock leftNode={'TODO'} centerNode={'TODO'} rightNode={'TODO'} />

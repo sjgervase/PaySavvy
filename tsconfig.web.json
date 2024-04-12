@@ -21,6 +21,9 @@
       "@store/*": [
         "src/renderer/store/*"
       ],
+      "@localTypes/*": [
+        "src/renderer/types/*"
+      ],
     }
   }
 }

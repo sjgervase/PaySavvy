@@ -1,96 +1,85 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@components/Common/card'
-import { CardProps } from 'cardPropTypes'
 
 import { useSelector } from 'react-redux'
-import { selectUpcomingPaymentsByIds } from '@store/loansSlice'
-import { isSameMonth, setDate } from 'date-fns'
+import { formatISO, isSameMonth, parseISO, setDate } from 'date-fns'
 
 import BrushChartStacked from '@components/Charts/BrushStackedArea'
 
-import { UpcomingPaymentDatum } from 'storeTypes'
 import CardActionBlock from './CardAccessories/CardActionBlock'
+import { selectPaymentsByIds } from '@store/repaymentSlice'
+import { CardProps } from '@localTypes/cards'
 
 const PayoffTimeline = ({ filteredIds }: CardProps): JSX.Element => {
-  const upcomingPaymentsData = useSelector(selectUpcomingPaymentsByIds(filteredIds)).map((d) => ({
-    ...d,
-    amount: d.amount * 100
-  }))
+  type Initial = {
+    identifiers: Array<{ id: string; color: string; name: string }>
+    allPayments: Array<{ id: string; date: string; amount: number }>
+  }
 
-  type NetRemainingAtDate = { id: string; amount: number; date: Date }
+  const initial: Initial = { identifiers: [], allPayments: [] }
 
-  const totalsForLoans = upcomingPaymentsData.reduce(
-    (acc: { sorted: NetRemainingAtDate[]; unsorted: UpcomingPaymentDatum[] }, datum) => {
-      // find all matching payments
-      const matching = acc.unsorted.filter((p) => p.id === datum.id)
-      // if no matching payments, return
-      if (matching.length === 0) return acc
-      // get total for all matching payments
-      const totalDue = matching.reduce((sum, p) => sum + p.amount, 0)
+  const { identifiers, allPayments } = useSelector(selectPaymentsByIds(filteredIds)).reduce(
+    (acc, datum) => {
+      const identifier = { id: datum.id, color: datum.color, name: datum.name }
 
-      return {
-        sorted: [
-          ...acc.sorted,
-          // a data point for today
-          { date: new Date(), amount: totalDue / 100, id: datum.id },
-          // all data points from loan
-          ...matching.map((payment, i) => ({
-            id: datum.id,
-            date: setDate(payment.date, 15), // better graphing
-            amount: (totalDue - (i + 1) * payment.amount) / 100
-          }))
-        ],
-        // payments with a different id
-        unsorted: acc.unsorted.filter((p) => p.id !== datum.id)
-      }
-    },
-    // initial obj
-    { sorted: [], unsorted: upcomingPaymentsData }
-  ).sorted
+      const total = datum.upcomingPayments.reduce((sum, payment) => sum + payment.amount * 100, 0)
 
-  // create an object of all ids with a value of 0 to use as the default
-  const defaultDataPoint = Array.from([
-    ...new Set(upcomingPaymentsData.map((item) => item.id))
-  ]).reduce((o, id) => ({ ...o, [id]: 0 }), {})
-
-  const chartData = totalsForLoans.reduce(
-    (acc: { merged: object[]; unmerged: NetRemainingAtDate[] }, datum) => {
-      // get all dataPoints in the same month and year as current dataPoint
-      const matching = acc.unmerged.filter((el) => isSameMonth(datum.date, el.date))
-      // if no dates pass filter, return
-      if (matching.length === 0) return acc
+      // If loan payment was made this month, add additional filler for graphing
+      const adjusted = !isSameMonth(datum.upcomingPayments[0].date, new Date())
+        ? [{ date: setDate(new Date(), 28), principal: 0, interest: 0, amount: 0 }].concat(
+            datum.upcomingPayments
+          )
+        : datum.upcomingPayments
 
       return {
-        merged: [
-          ...acc.merged,
-          // merge elements of sameMonthAndYear
-          matching.reduce((acc, el) => ({ ...acc, [el.id]: el.amount }), {
-            date: datum.date,
-            ...defaultDataPoint
-          })
-        ],
-        unmerged: acc.unmerged.filter((el) => !isSameMonth(datum.date, el.date)) // return different months
+        identifiers: [...acc.identifiers, identifier],
+        allPayments: [
+          ...acc.allPayments,
+          ...adjusted.reduce(
+            (accPayments, payment, index) => [
+              ...accPayments,
+              {
+                id: datum.id,
+                date: formatISO(setDate(payment.date, 28), { representation: 'date' }),
+                amount: accPayments[index].amount - payment.amount * 100
+              }
+            ],
+            [
+              {
+                id: datum.id,
+                date: formatISO(setDate(new Date(), 1), { representation: 'date' }),
+                amount: total
+              }
+            ]
+          )
+        ]
       }
     },
-    // initial
-    { merged: [], unmerged: totalsForLoans }
-  ).merged
+    initial
+  )
 
-  const identifiers = Object.keys(chartData[0])
-    .filter((key) => key !== 'date')
-    .map((key) => {
-      const match = upcomingPaymentsData.find((el) => el.id === key)
-      return { id: key, color: match?.color || '000000', name: match?.name || 'loan' }
-    })
+  const nilVal = identifiers.reduce((obj, i) => ({ ...obj, [i.id]: 0 }), {})
+
+  const merged: Array<{ date: string }> = Object.values(
+    allPayments.reduce((acc, datum) => {
+      // nullish coalescing op by current date
+      acc[datum.date] ??= { date: datum.date, ...nilVal }
+      // combine obj, including default value of 0 if a loan has no payment on that date
+      acc[datum.date] = { ...acc[datum.date], [datum.id]: datum.amount / 100 }
+      return acc
+    }, {})
+  )
+
+  const dataPoints = merged.map((datum) => ({ ...datum, date: parseISO(datum.date) }))
 
   return (
-    <Card className="col-span-3 h-full">
+    <Card className="h-full">
       <CardHeader>
         <CardTitle>Payoff Timeline</CardTitle>
         <CardActionBlock leftNode={'TODO'} centerNode={'TODO'} rightNode={'TODO'} />
       </CardHeader>
 
       <CardContent className="w-full aspect-3/1">
-        <BrushChartStacked data={chartData} identifiers={identifiers} />
+        <BrushChartStacked data={dataPoints} identifiers={identifiers} />
       </CardContent>
     </Card>
   )

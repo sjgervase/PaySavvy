@@ -2,7 +2,7 @@ import { addMonths, addQuarters, addWeeks, addYears, differenceInDays, isDate } 
 
 import { AdderReturnType } from 'dates'
 
-// convert to Date from backend format
+// format from store / api format
 export const getDateFromFormat = (dateString: string): Date => {
   const d = dateString.split('-').map((a) => Number(a))
   return new Date(d[2], d[1], d[0])
