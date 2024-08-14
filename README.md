@@ -12,6 +12,7 @@ A (work-in-progress) personal loan tracking application
 
 ```bash
 $ npm install
+
 ```
 
 ### Development
